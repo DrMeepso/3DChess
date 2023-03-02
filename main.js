@@ -147,6 +147,7 @@ class Board {
         let Width = 8 * 2
         let Height = 8 * 2
 
+
         for (let l = 0; l < Length+2; l += 2) {
             for (let h = 0; h < Height+2; h += 2) {
 
@@ -175,6 +176,9 @@ class Board {
 
             }
         }
+
+        return
+
         for (let l = 0; l < Length+2; l += 2) {
             for (let w = 0; w < Width+2; w += 2) {
 
