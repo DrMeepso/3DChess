@@ -22,6 +22,7 @@ class BoardSpace {
         this.position = new BABYLON.Vector3(x, y, z)
 
         // create cube
+        /*
         this.babylonMesh = BABYLON.MeshBuilder.CreateBox("box", { size: this.meshSize }, scene);
         this.babylonMesh.position = new BABYLON.Vector3(x * this.meshSize, y * this.meshSize, z * this.meshSize);
 
@@ -32,6 +33,7 @@ class BoardSpace {
         // set cube to be inv
         this.babylonMesh.material = new BABYLON.StandardMaterial("mat", scene);
         this.babylonMesh.material.alpha = 0;
+        */
 
     }
 
@@ -107,7 +109,7 @@ class Piece {
     }
 
     setPosition(x, y, z) {
-        this.babylonMesh.position = new BABYLON.Vector3(-(x * 2), (y * 2) - 1, z * 2)
+        this.babylonMesh.position = new BABYLON.Vector3(-((x * 2) + 1), ((y * 2) + 1) - 1, (z * 2) + 1)
         this.position = new BABYLON.Vector3(x, y, z)
     }
 
@@ -139,6 +141,53 @@ class Board {
 
             }
 
+        }
+
+        let Length = 10 * 2
+        let Width = 8 * 2
+        let Height = 8 * 2
+
+        for (let l = 0; l < Length+2; l += 2) {
+            for (let h = 0; h < Height+2; h += 2) {
+
+                // draw line
+                let line = BABYLON.MeshBuilder.CreateLines("lines", {
+                    points: [
+                        new BABYLON.Vector3(0, h, l),
+                        new BABYLON.Vector3(Width, h, l)
+                    ]
+                }, scene);
+                line.color = new BABYLON.Color4(0, 0, 0, 0.2)
+
+            }
+        }
+        for (let h = 0; h < Height+2; h += 2) {
+            for (let l = 0; l < Length-2; l += 2) {
+
+                // draw line
+                let line = BABYLON.MeshBuilder.CreateLines("lines", {
+                    points: [
+                        new BABYLON.Vector3(l, h, 0),
+                        new BABYLON.Vector3(l, h, Length)
+                    ]
+                }, scene);
+                line.color = new BABYLON.Color4(0, 0, 0, 0.2)
+
+            }
+        }
+        for (let l = 0; l < Length+2; l += 2) {
+            for (let w = 0; w < Width+2; w += 2) {
+
+                // draw line
+                let line = BABYLON.MeshBuilder.CreateLines("lines", {
+                    points: [
+                        new BABYLON.Vector3(w, 0, l),
+                        new BABYLON.Vector3(w, Height, l)
+                    ]
+                }, scene);
+                line.color = new BABYLON.Color4(0, 0, 0, 0.2)
+
+            }
         }
 
     }
@@ -213,6 +262,8 @@ const createScene = async function () {
 
     let scene = new BABYLON.Scene(engine);
     scene.ambientColor = new BABYLON.Color3(1, 1, 1);
+
+    scene.freezeActiveMeshes();
 
     const camera = new BABYLON.ArcRotateCamera("Camera", 0, 0, 0, new BABYLON.Vector3((8 * 2) / 2, (8 * 2) / 2, (10 * 2) / 2), scene);
     camera.inertia = 0
@@ -338,7 +389,7 @@ const createScene = async function () {
             });
             keys2.push({
                 frame: 30,
-                value: new BABYLON.Vector3(($.x * 2), ($.y * 2), ($.z * 2))
+                value: new BABYLON.Vector3(($.x * 2) + 1, ($.y * 2) + 1, ($.z * 2) + 1)
             });
 
             tween2.setKeys(keys2);
@@ -369,7 +420,7 @@ const createScene = async function () {
                     let PieceClone = piecePrefab[CurrentBoard.SelectedPiece.type].clone("clone")
                     CurrentBoard.PreviewPieces.push(PieceClone)
                     let pos = thing.position
-                    PieceClone.position = new BABYLON.Vector3(-(pos.x * 2), (pos.y * 2) - 1, pos.z * 2)
+                    PieceClone.position = new BABYLON.Vector3(-(pos.x * 2) - 1, (pos.y * 2), (pos.z * 2) + 1)
                     PieceClone.isVisible = true
                     if (CurrentBoard.SelectedPiece.team == "white") PieceClone.rotation = CurrentBoard.SelectedPiece.babylonMesh.rotation
 
@@ -385,15 +436,15 @@ const createScene = async function () {
 
                     let thing = CurrentBoard.BoardSpaces.find(b => b.position.x == e.x && b.position.y == e.y && b.position.z == e.z)
                     if (!thing) return
-                    
+
                     let OffendingPiece = CurrentBoard.Pieces.find(p => p.position.x == e.x && p.position.y == e.y && p.position.z == e.z)
-                    
+
                     OffendingPiece.babylonMesh.material.alpha = 0.5
 
                     let PieceClone = piecePrefab[CurrentBoard.SelectedPiece.type].clone("clone")
                     CurrentBoard.PreviewPieces.push(PieceClone)
                     let pos = thing.position
-                    PieceClone.position = new BABYLON.Vector3(-(pos.x * 2), (pos.y * 2) - 1, pos.z * 2)
+                    PieceClone.position = new BABYLON.Vector3(-(pos.x * 2) - 1, (pos.y * 2), (pos.z * 2) + 1)
                     PieceClone.isVisible = true
                     if (CurrentBoard.SelectedPiece.team == "white") PieceClone.rotation = CurrentBoard.SelectedPiece.babylonMesh.rotation
 
@@ -424,3 +475,7 @@ createScene()
         });
 
     })
+
+setInterval(() => {
+    console.log(engine.getFps().toFixed())
+}, 500)
