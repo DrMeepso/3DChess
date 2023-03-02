@@ -1,0 +1,150 @@
+html, body {
+    overflow: hidden;
+    width: 100%;
+    height: 100%;
+    margin: 0;
+    padding: 0;
+
+    background-color: rgb(51, 51, 77);
+}
+#renderCanvas {
+    width: 100%;
+    height: 100%;
+    touch-action: none;
+}
+#devConsole{
+
+    position: absolute;
+    left: 0px;
+    top: calc( 100% - 10px );
+    width: 500px;
+    height: 10px;
+
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+
+    p {
+
+        margin: 0;
+        padding: 0;
+        font-size: 12px;
+        color: #fff;
+        padding: 5px;
+        background-color: rgba(0,0,0,0.5);
+
+    }
+
+}
+
+.fadeOut {
+    animation-name: fadeOut;
+    animation-duration: 1s;
+    animation-fill-mode: forwards;
+}
+
+@keyframes fadeOut {
+    0% {
+        opacity: 1;
+    }
+    100% {
+        opacity: 0;
+    }
+}
+
+#UI {
+
+    width: 500px;
+    height: 300px;
+
+    position: absolute;
+    left: calc( 50% - 250px );
+    top: calc( 40% - 150px );
+
+    background-color: lightgray;
+    border: 1px solid black;
+    border-radius: 15px;
+
+    display: flex;
+    flex-direction: column;
+
+    #PartHolder{
+
+        width: 100%;
+        height: 70%;
+
+        display: flex;
+
+        .InfoBox {
+
+            margin: 5px;
+            margin-top: 0px;
+
+            height: 100%;
+            width: calc( (100% / 3) - 10px );
+            border: 1px solid black;
+            border-radius: 15px;
+
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-start;
+
+            .Header {
+
+                font-weight: bold;
+
+            }
+
+            .Paragraph {
+
+                font-size: smaller;
+
+            }
+
+            .subBox {
+
+                border: 1px solid black;
+                border-radius: 15px;
+
+                width: 100%;
+                height: calc(50% - 10px);
+
+                display: flex;
+                flex-direction: column;
+                justify-content: flex-start;
+
+                overflow: hidden;
+
+            }
+            #top{
+                margin-bottom: 10px;
+            }
+            #bottom{
+                margin-top: 10px;
+            }
+
+        }
+
+        #game {
+            border: none;
+        }
+
+    }
+
+    h3{
+        
+        text-align: center;
+
+    }
+
+    p {
+
+        margin: 0px;
+        margin-top: 10px;
+        padding: 0px;
+
+        text-align: center;
+
+    }
+
+}
