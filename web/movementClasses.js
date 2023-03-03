@@ -266,6 +266,7 @@ class KingMovement extends MovementClass {
 
         // calculate all moves for every other piece and dont allow king to move there
         let AllMoves = []
+        /*
         ArrayOfPieces.forEach(piece => {
             if (piece.team != this.team) {
                 let Moves = new MoveClasses[piece.type](piece.firstMove, piece.team).CalculateMove(piece.position, ArrayOfPieces, Board)
@@ -273,6 +274,7 @@ class KingMovement extends MovementClass {
                 AllMoves = AllMoves.concat(Moves.Captures)
             }
         })
+        */
 
         // check if king is in check
         let KingInCheck = false
