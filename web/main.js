@@ -1,4 +1,4 @@
-let MultiplayerSocket = new WebSocket("ws://localhost:3000")
+let MultiplayerSocket = new WebSocket(document.location.href.replace("http","ws").replace("https", "wss"))
 console.screen("Attempting to connect to server...")
 
 let Game = {
@@ -18,8 +18,6 @@ let Game = {
 }
 
 MultiplayerSocket.addEventListener("open", function (event) {
-
-    //MultiplayerSocket.send(JSON.stringify( { "function": "create" } ));
 
     event.target.addEventListener("message", function (event) {
 
@@ -44,6 +42,10 @@ MultiplayerSocket.addEventListener("open", function (event) {
                 break
             case "join":
 
+                if (data.error) {
+                    console.screen("Failed to join game!, " + data.error)
+                    return
+                }
                 console.screen("Joined game!, ID: " + data.gameId)
                 Game.gameId = data.gameId
                 Game.opponentId = data.whitePlayer
@@ -84,7 +86,7 @@ MultiplayerSocket.addEventListener("open", function (event) {
                             
                             let info = event.detail
 
-                            MultiplayerSocket.send(JSON.stringify({ "function": "move", "from": info.piece, "to": info.position }))
+                            MultiplayerSocket.send(JSON.stringify({ "function": "move", "from": info.piece, "to": info.position, "capture": info.capture }))
 
                         })
 
@@ -108,6 +110,7 @@ MultiplayerSocket.addEventListener("open", function (event) {
 
             case "gameStart":
                 console.screen("All players loaded, Ready to play!")
+                UpdateGameInfo()
             break
 
             case "move":
@@ -115,12 +118,24 @@ MultiplayerSocket.addEventListener("open", function (event) {
                 let Board = Game.CurrentBoard
                 Board.CurrentTurnColor = data.turn
 
-                console.screen("Turn updated!, " + data.turn)
+                let From = new BABYLON.Vector3(data.from._x, data.from._y, data.from._z)
+                let To = new BABYLON.Vector3(data.to._x, data.to._y, data.to._z)
 
+                if (data.capture){
+
+                    let Peice = Board.Pieces.find(e => e.position.x == To.x && e.position.y == To.y && e.position.z == To.z)
+                    Board.CapturePiece(Peice)
+
+                } 
+
+                let Peice = Board.Pieces.find(e => e.position.x == From.x && e.position.y == From.y && e.position.z == From.z)
+                Peice.moveTo(To.x, To.y, To.z)
+
+                UpdateGameInfo()
                 break
             case "turnUpdate":
                 Game.CurrentBoard.CurrentTurnColor = data.turn
-                console.screen("Turn updated!, " + data.turn)
+                UpdateGameInfo()
                 break
 
         }
@@ -128,6 +143,13 @@ MultiplayerSocket.addEventListener("open", function (event) {
     });
 
 });
+
+function UpdateGameInfo(){
+
+    console.log("Updateing Game Info")
+    document.getElementById("TurnP").innerText = `Its ${Game.CurrentBoard.CurrentTurnColor == Game.playerColor ? "Your" : Game.CurrentBoard.CurrentTurnColor}'s turn!`
+
+}
 
 let gameDisplay = document.getElementById("game")
 function UpdateGameDisplay() {

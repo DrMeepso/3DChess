@@ -44,6 +44,7 @@ class Piece {
     type = "king"
     captured = false
     firstMove = true
+    scene = null
 
     position = new BABYLON.Vector3(0, 0, 0)
 
@@ -59,6 +60,8 @@ class Piece {
         this.team = team
         this.type = type
         this.position = new BABYLON.Vector3(x, y, z)
+
+        this.scene = scene
 
         //clone prefab from table
         this.babylonMesh = piecePrefab[type].clone()
@@ -103,6 +106,30 @@ class Piece {
     setPosition(x, y, z) {
         this.babylonMesh.position = new BABYLON.Vector3(-((x * 2) + 1), ((y * 2) + 1) - 1, (z * 2) + 1)
         this.position = new BABYLON.Vector3(x, y, z)
+    }
+
+    moveTo(x, y, z) {
+    
+        // tween to new position
+        let tween = new BABYLON.Animation("tween", "position", 30, BABYLON.Animation.ANIMATIONTYPE_VECTOR3, BABYLON.Animation.ANIMATIONLOOPMODE_CONSTANT);
+        let keys = [];
+        keys.push({
+            frame: 0,
+            value: this.babylonMesh.position
+        });
+        keys.push({
+            frame: 30,
+            value: getPosition(x, y, z)
+        });
+        tween.setKeys(keys);
+        this.babylonMesh.animations.push(tween);
+        var thisP = this
+        this.scene.beginAnimation(this.babylonMesh, 0, 30, false, 3, function () {
+            thisP.setPosition(x, y, z)
+            thisP.animations = []
+            thisP.firstMove = false
+        });
+
     }
 
 }
@@ -457,6 +484,14 @@ class Board extends EventTarget {
         }
 
     }
+
+    CapturePiece(piece) {
+
+        piece.babylonMesh.dispose()
+        this.Pieces.splice(this.Pieces.indexOf(piece), 1)
+        console.screen(`Captured ${piece.team} ${piece.type}`)
+
+    }
 }
 
 const createScene = async function () {
@@ -585,35 +620,27 @@ const createScene = async function () {
             // find the preview piece
             let piece = CurrentBoard.PreviewPieces.find(e => e.babylonMesh == pickResult.pickedMesh)
 
+            // check if capture
+            let capture = CurrentBoard.Pieces.find(e => e.position.x == piece.position.x && e.position.y == piece.position.y && e.position.z == piece.position.z)
+            if (capture) CurrentBoard.CapturePiece(capture)
+
             // dispatch a move event
-            let event = new CustomEvent("move", { "detail": {
-                piece: CurrentBoard.ClickedPiece.position,
-                position: piece.position
-            }})
+            let event = new CustomEvent("move", {
+                "detail": {
+                    piece: CurrentBoard.ClickedPiece.position,
+                    position: piece.position,
+                    capture: capture ? true : false
+                }
+            })
 
             CurrentBoard.dispatchEvent(event)
 
-            // tween the piece to the position
-            let tween = new BABYLON.Animation("tween", "position", 30, BABYLON.Animation.ANIMATIONTYPE_VECTOR3, BABYLON.Animation.ANIMATIONLOOPMODE_CONSTANT);
-            let keys = [];
-            keys.push({
-                frame: 0,
-                value: CurrentBoard.ClickedPiece.babylonMesh.position
-            });
-            keys.push({
-                frame: 30,
-                value: getPosition(piece.position.x, piece.position.y, piece.position.z)
-            });
-            tween.setKeys(keys);
+            let $ = piece.position
 
-            CurrentBoard.ClickedPiece.babylonMesh.animations = [];
-            CurrentBoard.ClickedPiece.babylonMesh.animations.push(tween);
-            scene.beginAnimation(CurrentBoard.ClickedPiece.babylonMesh, 0, 30, false, 3, () => {
-                CurrentBoard.ClickedPiece.setPosition(piece.position.x, piece.position.y, piece.position.z)
-            })
+            // move the piece
+            CurrentBoard.ClickedPiece.moveTo($.x, $.y, $.z)
 
             // tween the cameras traget
-            $ = piece.position
             let tween2 = new BABYLON.Animation("tween", "target", 30, BABYLON.Animation.ANIMATIONTYPE_VECTOR3, BABYLON.Animation.ANIMATIONLOOPMODE_CONSTANT);
             let keys2 = [];
             keys2.push({

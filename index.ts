@@ -134,7 +134,7 @@ wsServer.on('connection', socket => {
                     gameToMove.PlayerTurn = NowTurn;
 
                     ThisPlayer?.send(JSON.stringify({ "function": "turnUpdate", "turn": NowTurn }));
-                    OtherPlayer?.send(JSON.stringify({ "function": "move", "from": data.from, "to": data.to, "turn": NowTurn }));
+                    OtherPlayer?.send(JSON.stringify({ "function": "move", "from": data.from, "to": data.to, "turn": NowTurn , "capture": data.capture}));
 
                     
                 }
@@ -148,7 +148,7 @@ wsServer.on('connection', socket => {
 
 });
 
-let server = app.listen(3000, () => {
+let server = app.listen(process.env.PORT || 3000, () => {
     console.log('Listening on port 3000');
 });
 server.on('upgrade', (request, socket, head) => {
