@@ -276,6 +276,7 @@ class KingMovement extends MovementClass {
 
         // check if king is in check
         let KingInCheck = false
+        /*
         AllMoves.forEach(move => {
             if (move.x == PiecePosition.x && move.y == PiecePosition.y && move.z == PiecePosition.z) {
 
@@ -296,6 +297,7 @@ class KingMovement extends MovementClass {
             })
 
         })
+        */
 
         Angles.forEach(angle => {
             let CurrMove = SpotCheck(PiecePosition, angle, ArrayOfPieces)
