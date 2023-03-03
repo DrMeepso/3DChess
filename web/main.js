@@ -1,9 +1,6 @@
 let MultiplayerSocket = new WebSocket(document.location.href.replace("http","ws").replace("https", "wss"))
 console.screen("Attempting to connect to server...")
 
-//preload mesh
-fetch("./meshs/pieces.glb")
-
 let Game = {
 
     "gameId": null,

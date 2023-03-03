@@ -149,8 +149,9 @@ wsServer.on('connection', socket => {
 });
 
 let server = app.listen(process.env.PORT || 5050, () => {
-    console.log('Listening on port 3000');
+    console.log('Server startup!');
 });
+
 server.on('upgrade', (request, socket, head) => {
     wsServer.handleUpgrade(request, socket, head, socket => {
         wsServer.emit('connection', socket, request);
