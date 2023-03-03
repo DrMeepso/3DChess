@@ -148,8 +148,9 @@ wsServer.on('connection', socket => {
 
 });
 
-let server = app.listen(process.env.PORT || 5050, () => {
-    console.log('Server startup!');
+let port = process.env.PORT || 5050
+let server = app.listen(port, () => {
+    console.log('Server started on port' + port);
 });
 
 server.on('upgrade', (request, socket, head) => {

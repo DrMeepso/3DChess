@@ -10,6 +10,9 @@ function DegsToRads(degs) {
 function getPosition(x, y, z) {
     return new BABYLON.Vector3(-((x * 2) + 1), ((y * 2) + 1) - 1, (z * 2) + 1)
 }
+function lerp(a, b, n) {
+    return (1 - n) * a + n * b;
+}
 
 class BoardSpace {
 
@@ -109,7 +112,7 @@ class Piece {
     }
 
     moveTo(x, y, z) {
-    
+
         // tween to new position
         let tween = new BABYLON.Animation("tween", "position", 30, BABYLON.Animation.ANIMATIONTYPE_VECTOR3, BABYLON.Animation.ANIMATIONLOOPMODE_CONSTANT);
         let keys = [];
@@ -129,6 +132,27 @@ class Piece {
             thisP.animations = []
             thisP.firstMove = false
         });
+
+    }
+
+    getPossibleMoves(PeicesToConsider) {
+
+        let MoveClasses = {
+
+            "king": KingMovement,
+            "queen": QueenMovement,
+            "rook": RookMovement,
+            "bishop": BishopMovement,
+            "knight": KnightMovement,
+            "pawn": PawnMovement
+
+        }
+
+        let MoveClass = MoveClasses[this.type]
+
+        MoveClass = new MoveClass(this.firstMove, this.team)
+        let Pieces = PeicesToConsider || this.boardParent.Pieces
+        return MoveClass.CalculateMove(this.position, Pieces, this.boardParent, PeicesToConsider)
 
     }
 
@@ -206,6 +230,7 @@ class Board extends EventTarget {
     Pieces = []
     Scene = null
 
+    CapturedPieces = []
     PreviewPieces = []
 
     SelectedPiece = null
@@ -248,7 +273,10 @@ class Board extends EventTarget {
                         new BABYLON.Vector3(Width, h, l)
                     ]
                 }, scene);
-                line.color = new BABYLON.Color4(0, 0, 0, 0.2)
+
+                let c = 0
+                line.color = new BABYLON.Color4(c, c, c)
+
                 line.isPickable = false
 
             }
@@ -263,7 +291,10 @@ class Board extends EventTarget {
                         new BABYLON.Vector3(l, h, Length)
                     ]
                 }, scene);
-                line.color = new BABYLON.Color4(0, 0, 0, 0.2)
+
+                let c = 0
+                line.color = new BABYLON.Color4(c, c, c)
+
                 line.isPickable = false
 
             }
@@ -318,8 +349,6 @@ class Board extends EventTarget {
             }
 
         }
-
-        console.log(`Loaded json state from ${jsonURL}`)
 
     }
 
@@ -489,7 +518,29 @@ class Board extends EventTarget {
 
         piece.babylonMesh.dispose()
         this.Pieces.splice(this.Pieces.indexOf(piece), 1)
+        this.CapturedPieces.push(piece)
+
         console.screen(`Captured ${piece.team} ${piece.type}`)
+
+    }
+
+    getAllMoves(team, pieces) {
+
+        pieces = pieces || this.Pieces
+
+        let allMoves = []
+        let Pieces = this.Pieces.filter(e => e.type != "king")
+        Pieces = Pieces.filter(e => e.team == team)
+        Pieces.forEach(piece => {
+
+            let moves = piece.getPossibleMoves(this.Pieces.filter(e => e.team != team && e.type != "king"))
+
+            allMoves = allMoves.concat(moves.Moves)
+            allMoves = allMoves.concat(moves.Captures)
+
+        })
+
+        return allMoves
 
     }
 }
@@ -524,7 +575,7 @@ const createScene = async function () {
     hemi1.specular = BABYLON.Color3.Black();
 
     // load models of pieces from single file
-    BABYLON.SceneLoader.ImportMesh("", "./meshs/", "Browser.glb", scene, function (newMeshes) {
+    BABYLON.SceneLoader.ImportMesh("", "./meshs/", "Browser.glb", scene, async function (newMeshes) {
 
         newMeshes.forEach((mesh, i) => {
 
@@ -565,6 +616,8 @@ const createScene = async function () {
 
             piecePrefab[mesh.name] = mesh
         })
+
+        await new Promise(resolve => setTimeout(resolve, 1000));
 
     })
 
@@ -661,8 +714,6 @@ const createScene = async function () {
 
             CurrentBoard.ClickedPiece.firstMove = false
 
-            console.log(CurrentBoard.convert3Dtofen())
-
         }
 
         if (CurrentBoard.SelectedPiece && pickResult.pickedMesh.name == "piece") {
@@ -671,7 +722,7 @@ const createScene = async function () {
             if (CurrentBoard.SelectedPiece.team != CurrentBoard.ThisPlayerColor) return
 
             CurrentBoard.ClickedPiece = CurrentBoard.SelectedPiece
-            console.log("Selected Piece: " + CurrentBoard.SelectedPiece.type + " (" + CurrentBoard.SelectedPiece.team + ")")
+            console.screen("Selected Piece: " + CurrentBoard.SelectedPiece.type + " (" + CurrentBoard.SelectedPiece.team + ")")
             // set camera to look at piece
 
             let $ = CurrentBoard.SelectedPiece.position
@@ -692,18 +743,6 @@ const createScene = async function () {
             camera.animations.push(tween2);
             scene.beginAnimation(camera, 0, 30, false, 10);
 
-            // Draw the possible moves
-            let MoveClasses = {
-
-                "king": KingMovement,
-                "queen": QueenMovement,
-                "rook": RookMovement,
-                "bishop": BishopMovement,
-                "knight": KnightMovement,
-                "pawn": PawnMovement
-
-            }
-
             CurrentBoard.PreviewPieces.forEach(e => {
 
                 e.babylonMesh.dispose()
@@ -713,9 +752,8 @@ const createScene = async function () {
                 e.babylonMesh.isPickable = true
             })
 
-            let classMove = new MoveClasses[CurrentBoard.SelectedPiece.type](true, CurrentBoard.SelectedPiece.team)
-            classMove.firstMove = CurrentBoard.SelectedPiece.firstMove
-            let moves = classMove.CalculateMove(CurrentBoard.SelectedPiece.position, CurrentBoard.Pieces, CurrentBoard)
+            let moves = CurrentBoard.SelectedPiece.getPossibleMoves()
+
             if (moves.Moves) {
                 moves.Moves.forEach(e => {
 

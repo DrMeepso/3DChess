@@ -3,6 +3,9 @@
 
 <!--FUCK OFF BEN!!!!-->
 
+<script src="./consoleWarning.js"></script>
+
+
 <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     <title>3DChess</title>
@@ -21,16 +24,20 @@
 
         <div id="BlackTeamInfo" class="TeamInfo">
 
-
+            <p id="BlackUserType" class="UserDisplay">Black</p>
+            <img class="TeamDisplay" src="./sprites/bk.png">
+            <div id="BlackCaptureDisplay" class="CaptureDisplay"></div>
 
         </div>
-        <p id="TurnP">Its [TEAM]'s turn</p>
+        <p id="TurnP">Its Grays's turn</p>
         <div id="WhiteTeamInfo" class="TeamInfo">
 
-
+            <p id="WhiteUserType" class="UserDisplay">White</p>
+            <img class="TeamDisplay" src="./sprites/wk.png">
+            <div id="WhiteCaptureDisplay" class="CaptureDisplay"></div>
 
         </div>
-        
+
 
     </div>
 
@@ -52,6 +59,10 @@
                 <div class="subBox" id="bottom">
                     <p class="Header">Create a game</p>
                     <br>
+                    <div style="display: inline;">
+                        <input type="checkbox" id="privateGame" checked>
+                        <label for="privateGame">Private Match?</label>
+                    </div>
                     <button id="createGame">Create</button>
                 </div>
 
@@ -95,8 +106,6 @@
 </body>
 
 </html>
-
-<script src="./consoleWarning.js"></script>
 
 <script src="./babylonJS/babylon.js"></script>
 <script src="./babylonJS/babylonjs.materials.min.js"></script>

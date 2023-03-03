@@ -17,7 +17,7 @@ class MovementClass {
 function AddVec3(v1, v2) {
     return new BABYLON.Vector3(v1.x + v2.x, v1.y + v2.y, v1.z + v2.z)
 }
-function LineCheck(peicePos, increment, ArrayOfPieces) {
+function LineCheck(peicePos, increment, ArrayOfPieces, Board) {
 
     let Moves = []
     let Captures = []
@@ -26,10 +26,13 @@ function LineCheck(peicePos, increment, ArrayOfPieces) {
         let WP = new BABYLON.Vector3(peicePos.x + (increment.x * i), peicePos.y + (increment.y * i), peicePos.z + (increment.z * i))
         let piece = ArrayOfPieces.find(e => e.position.x == WP.x && e.position.y == WP.y && e.position.z == WP.z)
         if (piece) {
-            let selectedPiece = ArrayOfPieces.find(e => e.position.x == peicePos.x && e.position.y == peicePos.y && e.position.z == peicePos.z)
-            if ( selectedPiece.team != piece.team) {
+
+            let selectedPiece = Board.Pieces.find(e => e.position.x == peicePos.x && e.position.y == peicePos.y && e.position.z == peicePos.z)
+
+            if ( piece.team != selectedPiece.team) {
                 Captures.push(WP)
             }
+
             break;
         } else {
             Moves.push(WP)
@@ -39,7 +42,7 @@ function LineCheck(peicePos, increment, ArrayOfPieces) {
     return { Moves, Captures }
 
 }
-function SpotCheck(peicePos, increment, ArrayOfPieces) {
+function SpotCheck(peicePos, increment, ArrayOfPieces, Board) {
 
     let Moves = []
     let Captures = []
@@ -49,7 +52,7 @@ function SpotCheck(peicePos, increment, ArrayOfPieces) {
     if (!piece) {
         Moves.push(WP)
     } else {
-        let selectedPiece = ArrayOfPieces.find(e => e.position.x == peicePos.x && e.position.y == peicePos.y && e.position.z == peicePos.z)
+        let selectedPiece = Board.Pieces.find(e => e.position.x == peicePos.x && e.position.y == peicePos.y && e.position.z == peicePos.z)
         if (selectedPiece.team != piece.team) {
             Captures.push(WP)
         }
@@ -119,12 +122,12 @@ class PawnMovement extends MovementClass {
         }
 
         Angles.forEach(angle => {
-            let CurMove = SpotCheck(PiecePosition, angle, ArrayOfPieces)
+            let CurMove = SpotCheck(PiecePosition, angle, ArrayOfPieces, Board)
             Moves = Moves.concat(CurMove.Moves)
         })
 
         AttackMoves.forEach(angle => {
-            let CurMove = SpotCheck(PiecePosition, angle, ArrayOfPieces)
+            let CurMove = SpotCheck(PiecePosition, angle, ArrayOfPieces, Board)
             Captures = Captures.concat(CurMove.Captures)
         })
 
@@ -156,7 +159,7 @@ class RookMovement extends MovementClass {
         ]
 
         Angles.forEach(angle => {
-            let CurMove = LineCheck(PiecePosition, angle, ArrayOfPieces)
+            let CurMove = LineCheck(PiecePosition, angle, ArrayOfPieces, Board)
             Moves = Moves.concat(CurMove.Moves)
             Captures = Captures.concat(CurMove.Captures)
         })
@@ -194,7 +197,7 @@ class BishopMovement extends MovementClass {
         ]
 
         Angles.forEach(angle => {
-            let CurrMove = LineCheck(PiecePosition, angle, ArrayOfPieces)
+            let CurrMove = LineCheck(PiecePosition, angle, ArrayOfPieces, Board)
             Moves = Moves.concat(CurrMove.Moves)
             Captures = Captures.concat(CurrMove.Captures)
         })
@@ -264,45 +267,24 @@ class KingMovement extends MovementClass {
             new BABYLON.Vector3(-1, 0, -1),
         ]
 
-        // calculate all moves for every other piece and dont allow king to move there
-        let AllMoves = []
-        /*
-        ArrayOfPieces.forEach(piece => {
-            if (piece.team != this.team) {
-                let Moves = new MoveClasses[piece.type](piece.firstMove, piece.team).CalculateMove(piece.position, ArrayOfPieces, Board)
-                AllMoves = AllMoves.concat(Moves.Moves)
-                AllMoves = AllMoves.concat(Moves.Captures)
-            }
-        })
-        */
+        let Piece = ArrayOfPieces.find(piece => piece.position.x == PiecePosition.x && piece.position.y == PiecePosition.y && piece.position.z == PiecePosition.z)
 
-        // check if king is in check
-        let KingInCheck = false
-        /*
-        AllMoves.forEach(move => {
-            if (move.x == PiecePosition.x && move.y == PiecePosition.y && move.z == PiecePosition.z) {
-
-                KingInCheck = true
-
-            }
+        Board.getAllMoves(Piece.team == "white" ? "black" : "white").forEach(move => {
 
             Angles.forEach(angle => {
 
-                let movePos = AddVec3(PiecePosition, angle)
-                if (move.x == movePos.x && move.y == movePos.y && move.z == movePos.z) {
-                    // remove move
-                    Moves = Moves.filter(move => {
-                        return !(move.x == movePos.x && move.y == movePos.y && move.z == movePos.z)
-                    })
+                let $ = AddVec3(PiecePosition, angle)
+                if ( $.x == move.x && $.y == move.y && $.z == move.z ){
+                    Angles.splice(Angles.indexOf(angle), 1)
                 }
 
             })
 
+
         })
-        */
 
         Angles.forEach(angle => {
-            let CurrMove = SpotCheck(PiecePosition, angle, ArrayOfPieces)
+            let CurrMove = SpotCheck(PiecePosition, angle, ArrayOfPieces, Board)
             Moves = Moves.concat(CurrMove.Moves)
             Captures = Captures.concat(CurrMove.Captures)
         })
@@ -351,7 +333,7 @@ class KnightMovement extends MovementClass {
         ]
 
         Angles.forEach(angle => {
-            let CurrMove = SpotCheck(PiecePosition, angle, ArrayOfPieces)
+            let CurrMove = SpotCheck(PiecePosition, angle, ArrayOfPieces, Board)
             Moves = Moves.concat(CurrMove.Moves)
             Captures = Captures.concat(CurrMove.Captures)
         })

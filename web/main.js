@@ -77,6 +77,8 @@ MultiplayerSocket.addEventListener("open", function (event) {
                         let babyscene = game.scene
                         let Board = game.CurrentBoard
 
+                        Game.CurrentBoard = Board
+
                         Board.convertFento3D(data.boardState)
                         Board.ThisPlayerColor = Game.playerColor
 
@@ -90,8 +92,6 @@ MultiplayerSocket.addEventListener("open", function (event) {
 
                         })
 
-                        Game.CurrentBoard = Board
-
                         console.screen("Loaded!")
                         document.getElementById("UI").style.display = "none"
                         MultiplayerSocket.send(JSON.stringify({ "function": "loaded" }))
@@ -104,6 +104,7 @@ MultiplayerSocket.addEventListener("open", function (event) {
                         window.addEventListener("resize", function () {
                             engine.resize();
                         });
+                        engine.resize();
 
                     })
                 break
@@ -146,8 +147,45 @@ MultiplayerSocket.addEventListener("open", function (event) {
 
 function UpdateGameInfo(){
 
-    console.log("Updateing Game Info")
-    document.getElementById("TurnP").innerText = `Its ${Game.CurrentBoard.CurrentTurnColor == Game.playerColor ? "Your" : Game.CurrentBoard.CurrentTurnColor}'s turn!`
+    document.getElementById("TurnP").innerText = `Its ${Game.CurrentBoard.CurrentTurnColor == Game.playerColor ? "Your" : Game.CurrentBoard.CurrentTurnColor + "'s"} turn!`
+
+    let typeToChar = {
+        "pawn": "p",
+        "rook": "r",
+        "knight": "n",
+        "bishop": "b",
+        "queen": "q",
+        "king": "k"
+    }
+
+    let capturedPieces = Game.CurrentBoard.CapturedPieces
+
+    let WhiteHolder = document.getElementById("WhiteCaptureDisplay")
+    let BlackHolder = document.getElementById("BlackCaptureDisplay")
+
+    BlackHolder.innerHTML = ""
+    WhiteHolder.innerHTML = ""
+
+    capturedPieces.forEach(e => {
+
+        let piece = e.type
+        let color = e.team
+
+        let pieceChar = typeToChar[piece]
+
+        let html = `<img class="CapturedPiece" src="./sprites/${ color == "white" ? "w" : "b" }${pieceChar}.png">`
+
+        if (color == "white") {
+            BlackHolder.innerHTML += html
+        } else {
+            WhiteHolder.innerHTML += html
+        }
+
+    })
+
+    if (Game.playerColor == "white") {
+        document.getElementById("GameUI").style.flexDirection = "row-reverse"
+    }
 
 }
 
