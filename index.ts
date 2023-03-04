@@ -34,12 +34,16 @@ class Game {
     public BoardState: string
     public PlayerTurn: string = "white"
 
+    public PublicRoom: boolean = false
+
     public ID: string;
 
-    constructor(whitePlayer: Client) {
+    constructor(whitePlayer: Client, Public: boolean) {
         this.whitePlayer = whitePlayer;
         this.blackPlayer = null;
         this.BoardState = '';
+
+        this.PublicRoom = Public
 
         this.ID = this.generateId();
     }
@@ -97,7 +101,7 @@ wsServer.on('connection', socket => {
                 break;
 
             case 'create':
-                const newGame = new Game(client);
+                const newGame = new Game(client, data.public);
                 games.push(newGame);
                 client.send(JSON.stringify({ "function": "create", "gameId": newGame.ID }));
                 break;
@@ -136,6 +140,7 @@ wsServer.on('connection', socket => {
                     ThisPlayer?.send(JSON.stringify({ "function": "turnUpdate", "turn": NowTurn }));
                     OtherPlayer?.send(JSON.stringify({ "function": "move", "from": data.from, "to": data.to, "turn": NowTurn , "capture": data.capture}));
 
+                    gameToMove.BoardState = data.boardState;
                     
                 }
         }
@@ -144,17 +149,47 @@ wsServer.on('connection', socket => {
 
     socket.on('close', () => {
         clients.splice(clients.indexOf(client), 1);
+
+        const game = games.find(game => game.whitePlayer.id === client.id || game.blackPlayer?.id === client.id);
+        if (game) {
+            game.informClients({ "function": "playerLeave", "clientId": client.id });
+            games.splice(games.indexOf(game), 1);
+        }
+
     });
 
+});
+
+app.get('/api/games', (req, res) => {
+    res.json(games.map(game => {
+        return {
+            id: game.PublicRoom || game.blackPlayer ? game.ID : "redacted",
+            whitePlayer: game.whitePlayer.id,
+            blackPlayer: game.blackPlayer?.id,
+            public: game.PublicRoom,
+            boardState: game.BoardState,
+        }
+    }));
 });
 
 let port = process.env.PORT || 5050
 let server = app.listen(port, () => {
-    console.log('Server started on port' + port);
+    console.log('Server started on port: ' + port);
 });
 
 server.on('upgrade', (request, socket, head) => {
-    wsServer.handleUpgrade(request, socket, head, socket => {
-        wsServer.emit('connection', socket, request);
-    });
+    
+    let timeStamp = request.url?.split('/')[3]
+
+    // if timestamp happend within 5 seconds of now, accept the request
+    if (timeStamp && (Date.now() - parseInt(timeStamp)) < 5000) {
+
+        wsServer.handleUpgrade(request, socket, head, socket => {
+            wsServer.emit('connection', socket, request);
+        });
+
+    } else {
+        socket.destroy();
+    }
+
 });

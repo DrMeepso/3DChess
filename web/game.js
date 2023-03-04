@@ -692,6 +692,10 @@ const createScene = async function () {
 
             // move the piece
             CurrentBoard.ClickedPiece.moveTo($.x, $.y, $.z)
+            CurrentBoard.ClickedPiece.position = new BABYLON.Vector3($.x, $.y, $.z)
+
+            // end turn
+            CurrentBoard.CurrentTurnColor = CurrentBoard.CurrentTurnColor == "white" ? "black" : "white"
 
             // tween the cameras traget
             let tween2 = new BABYLON.Animation("tween", "target", 30, BABYLON.Animation.ANIMATIONTYPE_VECTOR3, BABYLON.Animation.ANIMATIONLOOPMODE_CONSTANT);

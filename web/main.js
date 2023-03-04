@@ -1,4 +1,6 @@
-let MultiplayerSocket = new WebSocket(document.location.href.replace("http","ws").replace("https", "wss"))
+let CurrentURL = document.location.href.replace("http", "ws").replace("https", "wss")
+let WSURL = CurrentURL + "api/ws/" + Date.now()
+let MultiplayerSocket = new WebSocket(WSURL)
 console.screen("Attempting to connect to server...")
 
 let Game = {
@@ -53,7 +55,6 @@ MultiplayerSocket.addEventListener("open", function (event) {
                 break
             case "playerJoin":
 
-                console.log(data)
                 console.screen("Player joined!, ID: " + data.clientId)
                 if (data.clientId != Game.clientId) {
                     Game.opponentId = data.clientId
@@ -85,10 +86,11 @@ MultiplayerSocket.addEventListener("open", function (event) {
                         Board.CurrentTurnColor = "white"
 
                         Board.addEventListener("move", function (event) {
-                            
-                            let info = event.detail
 
-                            MultiplayerSocket.send(JSON.stringify({ "function": "move", "from": info.piece, "to": info.position, "capture": info.capture }))
+                            let info = event.detail
+                            setTimeout(() => {
+                                MultiplayerSocket.send(JSON.stringify({ "function": "move", "from": info.piece, "to": info.position, "capture": info.capture, "boardState": Board.convert3Dtofen() }))
+                            }, 10)
 
                         })
 
@@ -112,7 +114,7 @@ MultiplayerSocket.addEventListener("open", function (event) {
             case "gameStart":
                 console.screen("All players loaded, Ready to play!")
                 UpdateGameInfo()
-            break
+                break
 
             case "move":
 
@@ -122,12 +124,12 @@ MultiplayerSocket.addEventListener("open", function (event) {
                 let From = new BABYLON.Vector3(data.from._x, data.from._y, data.from._z)
                 let To = new BABYLON.Vector3(data.to._x, data.to._y, data.to._z)
 
-                if (data.capture){
+                if (data.capture) {
 
                     let Peice = Board.Pieces.find(e => e.position.x == To.x && e.position.y == To.y && e.position.z == To.z)
                     Board.CapturePiece(Peice)
 
-                } 
+                }
 
                 let Peice = Board.Pieces.find(e => e.position.x == From.x && e.position.y == From.y && e.position.z == From.z)
                 Peice.moveTo(To.x, To.y, To.z)
@@ -138,6 +140,17 @@ MultiplayerSocket.addEventListener("open", function (event) {
                 Game.CurrentBoard.CurrentTurnColor = data.turn
                 UpdateGameInfo()
                 break
+            case "playerLeave":
+                console.screen("Player left!")
+                Game.opponentId = null
+                Game.opponentColor = null
+                UpdateGameDisplay()
+
+                setInterval(() => {
+                    console.screen("Please reload the page to play again!")
+                }, 5000)
+
+                break
 
         }
 
@@ -145,7 +158,7 @@ MultiplayerSocket.addEventListener("open", function (event) {
 
 });
 
-function UpdateGameInfo(){
+function UpdateGameInfo() {
 
     document.getElementById("TurnP").innerText = `Its ${Game.CurrentBoard.CurrentTurnColor == Game.playerColor ? "Your" : Game.CurrentBoard.CurrentTurnColor + "'s"} turn!`
 
@@ -173,7 +186,7 @@ function UpdateGameInfo(){
 
         let pieceChar = typeToChar[piece]
 
-        let html = `<img class="CapturedPiece" src="./sprites/${ color == "white" ? "w" : "b" }${pieceChar}.png">`
+        let html = `<img class="CapturedPiece" src="./sprites/${color == "white" ? "w" : "b"}${pieceChar}.png">`
 
         if (color == "white") {
             BlackHolder.innerHTML += html
@@ -220,7 +233,7 @@ function UpdateGameDisplay() {
 
 document.getElementById("createGame").addEventListener("click", function () {
 
-    MultiplayerSocket.send(JSON.stringify({ "function": "create" }));
+    MultiplayerSocket.send(JSON.stringify({ "function": "create", "public": !document.getElementById("privateGame").checked }));
 
 })
 
