@@ -73,7 +73,8 @@ MultiplayerSocket.addEventListener("open", function (event) {
 
             case "start":
 
-                console.screen("Game started!")
+                document.getElementById("UI").style.display = "none"
+                console.screen("Game Loading...")
                 createScene()
                     .then(async (game) => {
 
@@ -83,6 +84,7 @@ MultiplayerSocket.addEventListener("open", function (event) {
 
                         Game.CurrentBoard = Board
 
+                        console.screen("Loading assets...")
                         await waitForAssets()
                             
                         Board.convertFento3D(data.boardState)
@@ -171,7 +173,7 @@ async function waitForAssets(){
 
         let interval = setInterval(() => {
 
-            if (piecePrefab.length > 0) {
+            if (piecePrefab.pawn) {
                 clearInterval(interval)
                 resolve()
             }
