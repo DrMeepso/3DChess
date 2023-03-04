@@ -75,7 +75,7 @@ MultiplayerSocket.addEventListener("open", function (event) {
 
                 console.screen("Game started!")
                 createScene()
-                    .then(game => {
+                    .then(async (game) => {
 
                         let babyscene = game.scene
                         let Board = game.CurrentBoard
@@ -83,12 +83,8 @@ MultiplayerSocket.addEventListener("open", function (event) {
 
                         Game.CurrentBoard = Board
 
-                        // wait for while to finish
-
-                        while (piecePrefab.pawn == undefined) {
-                            console.log("waiting")
-                        }
-
+                        await waitForAssets()
+                            
                         Board.convertFento3D(data.boardState)
 
                         Board.CurrentTurnColor = "white"
@@ -168,6 +164,23 @@ MultiplayerSocket.addEventListener("open", function (event) {
     });
 
 });
+
+async function waitForAssets(){
+
+    return new Promise((resolve, reject) => {
+
+        let interval = setInterval(() => {
+
+            if (piecePrefab.length > 0) {
+                clearInterval(interval)
+                resolve()
+            }
+
+        }, 100)
+
+    })
+
+}
 
 function UpdateGameInfo() {
 
