@@ -1,7 +1,28 @@
 import express from 'express';
 import { WebSocketServer, WebSocket } from 'ws';
+import fs from "fs"
 
 const app = express();
+
+app.get('/', (req, res) => {
+
+    // use fs to read index.html
+    fs.readFile('./web/index.html', (err, data) => {
+        if (err) {
+            res.writeHead(500);
+            return res.end('Error loading index.html');
+        }
+        res.writeHead(200);
+        res.end(
+`
+<!-- ${games.length} game${ games.length > 1 || games.length == 0 ? "s" : "" } running and counting! --!>
+${data}
+`
+        );
+    });
+
+})
+
 app.use(express.static(`./web`));
 
 class Client {

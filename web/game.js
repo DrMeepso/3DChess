@@ -543,6 +543,19 @@ class Board extends EventTarget {
         return allMoves
 
     }
+
+    checkForCheck(team) {
+
+        let king = this.Pieces.filter(e => e.team == team && e.type == "king")[0]
+
+        let moves = this.getAllMoves(team == "white" ? "black" : "white")
+
+        let kingMoves = moves.filter(e => e.x == king.position.x && e.y == king.position.y && e.z == king.position.z)
+
+        return kingMoves.length > 0
+
+    }
+    
 }
 
 const createScene = async function () {
@@ -559,7 +572,7 @@ const createScene = async function () {
     camera.angularSensibilityY = 300;
     camera.wheelPrecision = 10;
 
-    camera.setPosition(new BABYLON.Vector3((8 * 2) / 2 + 20, (8 * 2) / 2 + 20, (8 * 2) / 2 + 20));
+    camera.setPosition(new BABYLON.Vector3(((8 * 2) / 2 + 20), ((8 * 2) / 2 + 20), ((8 * 2) / 2 + 20)));
     camera.attachControl(canvas, true);
 
     // fov
@@ -624,7 +637,6 @@ const createScene = async function () {
     await new Promise(resolve => setTimeout(resolve, 1000));
 
     let CurrentBoard = new Board(scene)
-    //CurrentBoard.convertFento3D(`RNBQKBNRPPPPPPPP0000000000000000000000000000000000000000000000000000000000008pppppppprnbqkbnr`)
 
     Boards.push(CurrentBoard)
 

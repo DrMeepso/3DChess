@@ -21,7 +21,7 @@ let Game = {
 
 MultiplayerSocket.addEventListener("open", function (event) {
 
-    event.target.addEventListener("message", function (event) {
+    event.target.addEventListener("message", async function (event) {
 
         let data = JSON.parse(event.data)
 
@@ -77,11 +77,17 @@ MultiplayerSocket.addEventListener("open", function (event) {
 
                         let babyscene = game.scene
                         let Board = game.CurrentBoard
+                        Board.ThisPlayerColor = Game.playerColor
 
                         Game.CurrentBoard = Board
 
+                        // wait for while to finish
+
+                        while (piecePrefab.pawn == undefined) {
+                            console.log("waiting")
+                        }
+
                         Board.convertFento3D(data.boardState)
-                        Board.ThisPlayerColor = Game.playerColor
 
                         Board.CurrentTurnColor = "white"
 
