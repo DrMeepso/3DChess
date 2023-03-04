@@ -42,6 +42,7 @@ MultiplayerSocket.addEventListener("open", function (event) {
                 UpdateGameDisplay()
 
                 break
+
             case "join":
 
                 if (data.error) {
@@ -53,6 +54,7 @@ MultiplayerSocket.addEventListener("open", function (event) {
                 Game.opponentId = data.whitePlayer
 
                 break
+
             case "playerJoin":
 
                 console.screen("Player joined!, ID: " + data.clientId)
@@ -119,6 +121,7 @@ MultiplayerSocket.addEventListener("open", function (event) {
 
             case "gameStart":
                 console.screen("All players loaded, Ready to play!")
+                document.getElementById("GameUI").style.display = "flex"
                 UpdateGameInfo()
                 break
 
@@ -142,10 +145,12 @@ MultiplayerSocket.addEventListener("open", function (event) {
 
                 UpdateGameInfo()
                 break
+
             case "turnUpdate":
                 Game.CurrentBoard.CurrentTurnColor = data.turn
                 UpdateGameInfo()
                 break
+
             case "playerLeave":
                 console.screen("Player left!")
                 Game.opponentId = null
@@ -168,6 +173,18 @@ function UpdateGameInfo() {
 
     document.getElementById("TurnP").innerText = `Its ${Game.CurrentBoard.CurrentTurnColor == Game.playerColor ? "Your" : Game.CurrentBoard.CurrentTurnColor + "'s"} turn!`
 
+    if (Game.CurrentBoard.checkForCheck("black")) {
+        document.getElementById("BlackWarning").style.display = "block"
+    } else {
+        document.getElementById("BlackWarning").style.display = "none"
+    }
+
+    if (Game.CurrentBoard.checkForCheck("white")) {
+        document.getElementById("WhiteWarning").style.display = "block"
+    } else {
+        document.getElementById("WhiteWarning").style.display = "none"
+    }
+    
     let typeToChar = {
         "pawn": "p",
         "rook": "r",

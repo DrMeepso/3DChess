@@ -113,6 +113,8 @@ class Piece {
 
     moveTo(x, y, z) {
 
+        this.position = new BABYLON.Vector3(x, y, z)
+
         // tween to new position
         let tween = new BABYLON.Animation("tween", "position", 30, BABYLON.Animation.ANIMATIONTYPE_VECTOR3, BABYLON.Animation.ANIMATIONLOOPMODE_CONSTANT);
         let keys = [];
@@ -555,7 +557,7 @@ class Board extends EventTarget {
         return kingMoves.length > 0
 
     }
-    
+
 }
 
 const createScene = async function () {

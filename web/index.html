@@ -4,7 +4,6 @@
 
 <script src="./consoleWarning.js"></script>
 
-
 <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     <title>3DChess</title>
@@ -24,7 +23,9 @@
         <div id="BlackTeamInfo" class="TeamInfo">
 
             <p id="BlackUserType" class="UserDisplay">Black</p>
-            <img class="TeamDisplay" src="./sprites/bk.png">
+            <div class="TeamDisplay" id="BlackSprite" src="./sprites/bk.png">
+                <img src="./sprites/warning.gif" id="BlackWarning" class="Warning">
+            </div>
             <div id="BlackCaptureDisplay" class="CaptureDisplay"></div>
 
         </div>
@@ -32,13 +33,17 @@
         <div id="WhiteTeamInfo" class="TeamInfo">
 
             <p id="WhiteUserType" class="UserDisplay">White</p>
-            <img class="TeamDisplay" src="./sprites/wk.png">
+            <div class="TeamDisplay" id="WhiteSprite" src="./sprites/wk.png">
+                <img src="./sprites/warning.gif" id="WhiteWarning" class="Warning">
+            </div>
             <div id="WhiteCaptureDisplay" class="CaptureDisplay"></div>
 
         </div>
 
 
     </div>
+
+    <script>document.getElementById("GameUI").style.display = "none"</script>
 
     <div id="UI">
 
