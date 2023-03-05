@@ -86,7 +86,7 @@ MultiplayerSocket.addEventListener("open", function (event) {
 
                         console.screen("Loading assets...")
                         await waitForAssets()
-                            
+
                         Board.convertFento3D(data.boardState)
 
                         Board.CurrentTurnColor = "white"
@@ -97,6 +97,13 @@ MultiplayerSocket.addEventListener("open", function (event) {
                             setTimeout(() => {
                                 MultiplayerSocket.send(JSON.stringify({ "function": "move", "from": info.piece, "to": info.position, "capture": info.capture, "boardState": Board.convert3Dtofen() }))
                             }, 10)
+
+                            // captured piece
+                            let capturedPiece = Board.CapturedPieces.find(e => e.position.x == info.position._x && e.position.y == info.position._y && e.position.z == info.position._z)
+                            if (capturedPiece && capturedPiece.type == "king") {
+                                console.log("King Taken!")
+                                GameEnded()
+                            }
 
                         })
 
@@ -136,6 +143,12 @@ MultiplayerSocket.addEventListener("open", function (event) {
                     let Peice = Board.Pieces.find(e => e.position.x == To.x && e.position.y == To.y && e.position.z == To.z)
                     Board.CapturePiece(Peice)
 
+                    // captured piece
+                    if (Peice && Peice.type == "king") {
+                        console.log("King Taken!")
+                        GameEnded()
+                    }
+
                 }
 
                 let Peice = Board.Pieces.find(e => e.position.x == From.x && e.position.y == From.y && e.position.z == From.z)
@@ -167,7 +180,7 @@ MultiplayerSocket.addEventListener("open", function (event) {
 
 });
 
-async function waitForAssets(){
+async function waitForAssets() {
 
     return new Promise((resolve, reject) => {
 
@@ -181,6 +194,25 @@ async function waitForAssets(){
         }, 100)
 
     })
+
+}
+
+document.getElementById("restartGame").onclick = function () {
+
+    location.reload()
+
+}
+
+function GameEnded() {
+
+    document.getElementById("GameEndUI").style.display = "flex"
+    document.getElementById("GameUI").style.display = "none"
+
+    if (Game.CurrentBoard.Pieces.find( e => e.type == "king" && e.team == Game.playerColor )) {
+        document.getElementById("GameEndText").innerText = "You Won!"
+    } else {
+        document.getElementById("GameEndText").innerText = "You Lost!"
+    }
 
 }
 
@@ -199,7 +231,7 @@ function UpdateGameInfo() {
     } else {
         document.getElementById("WhiteWarning").style.display = "none"
     }
-    
+
     let typeToChar = {
         "pawn": "p",
         "rook": "r",
